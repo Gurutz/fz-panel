@@ -458,7 +458,7 @@
     /* ===== CONFIGURACIÓN =====
        Pega aquí la URL /exec de tu script de Apps Script (sin ?k=…).
        La clave NO va aquí: va en tu enlace (#k=…) o se pide en pantalla. */
-    window.API_URL = 'https://script.google.com/macros/s/AKfycbxTbd9arSpE0BqCUvn1OxMUpXh-UWo4Lt2kX4i7C3SnYyj-No9nlwtZNVk8a3pTMlB3zw/exec';
+    window.API_URL = 'PEGA_AQUI_TU_URL_EXEC';
   </script>
   <script>
   (function () {
@@ -519,10 +519,15 @@
     }
     function monthOf(b) { return state.mode === 'mr' ? b.mr : b.mc; }
 
+    // Con "Mes contable" solo cuentan los movimientos de Banco (columna A)
+    function isBanco(src) { return String(src || '').trim().toLowerCase() === 'banco'; }
+    function allowedSource(src) { return state.mode !== 'mc' || isBanco(src); }
+
     // Filtros base (fuente + mes); el año se aplica aparte para poder comparar
     function baseBuckets(opts) {
       opts = opts || {};
       return DATA.buckets.filter(function (b) {
+        if (!allowedSource(b.src)) return false;
         if (state.src !== 'all' && b.src !== state.src) return false;
         if (!opts.ignoreMonth && state.month && monthOf(b) !== state.month) return false;
         return true;
@@ -556,8 +561,9 @@
       $('monthSel').innerHTML = mopts.join('');
 
       var srcs = {};
-      DATA.buckets.forEach(function (b) { srcs[b.src] = 1; });
-      var sopts = ['<option value="all">Todas las fuentes</option>'];
+      DATA.buckets.forEach(function (b) { if (allowedSource(b.src)) srcs[b.src] = 1; });
+      if (state.src !== 'all' && !srcs[state.src]) state.src = 'all';
+      var sopts = ['<option value="all">' + (state.mode === 'mc' ? 'Solo Banco' : 'Todas las fuentes') + '</option>'];
       Object.keys(srcs).sort().forEach(function (s) {
         sopts.push('<option value="' + esc(s) + '"' + (state.src === s ? ' selected' : '') + '>' + esc(s) + '</option>');
       });
@@ -577,6 +583,7 @@
       if (!b) return;
       state.mode = b.dataset.v;
       [].forEach.call($('modeSeg').children, function (x) { x.classList.toggle('on', x === b); });
+      buildFilters();
       render();
     });
     $('refTabs').addEventListener('click', function (e) {
@@ -674,8 +681,8 @@
     function periodText() {
       var parts = [state.year === 'all' ? 'Todos los años' : String(state.year)];
       parts.push(state.month ? MONTHS_LONG[state.month - 1] : 'Todos los meses');
-      parts.push(state.mode === 'mr' ? 'mes real' : 'mes contable');
-      if (state.src !== 'all') parts.push(state.src);
+      parts.push(state.mode === 'mr' ? 'mes real' : 'mes contable · solo Banco');
+      if (state.src !== 'all' && state.mode !== 'mc') parts.push(state.src);
       return parts.join(' · ');
     }
 
