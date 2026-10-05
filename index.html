@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Finanzas">
+  <meta name="theme-color" content="#FAF8FF">
+  <title>Mis finanzas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Las fuentes se cargan sin bloquear: la página se pinta aunque tarden o fallen -->
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <style>
+    :root {
+      --bg: #FAF8FF;
+      --card: #FFFFFF;
+      --ink: #141619;
+      --ink-2: #3A3A40;
+      --muted: #6B6B72;
+      --line: #E7E2F6;
+      --violet: #5015FA;
+      --violet-soft: #EBEBFF;
+      --lavender: #D4C5FF;
+      --lime: #E1FF73;
+      --lime-soft: #F3FFD1;
+      --orange: #F4623A;
+      --orange-soft: #FFE9E2;
+      --radius: 20px;
+      --display: 'Fraunces', Georgia, 'Times New Roman', serif;
+      --body: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--body);
+      font-size: 15px;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, select, input { font: inherit; color: inherit; }
+    .num { font-variant-numeric: tabular-nums; }
+
+    /* ---------- Cabecera ---------- */
+    .top {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: max(18px, env(safe-area-inset-top)) 16px 10px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .eyebrow {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      background: var(--lime);
+      padding: 4px 9px;
+      border-radius: 99px;
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-family: var(--display);
+      font-weight: 500;
+      text-transform: uppercase;
+      font-size: clamp(30px, 7vw, 46px);
+      line-height: .95;
+      margin: 0;
+      letter-spacing: .01em;
+    }
+    .icon-btn {
+      flex: none;
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      border: 1.5px solid var(--ink);
+      background: var(--card);
+      display: grid; place-items: center;
+      cursor: pointer;
+      transition: background .15s, transform .4s;
+    }
+    .icon-btn:hover { background: var(--lime); }
+    .icon-btn.spin svg { animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ---------- Filtros ---------- */
+    .filters {
+      position: sticky; top: 0; z-index: 10;
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+    }
+    .filters-inner {
+      max-width: 1180px; margin: 0 auto;
+      padding: 10px 16px 12px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .chips {
+      display: flex; gap: 6px;
+      overflow-x: auto; scrollbar-width: none;
+      margin: 0 -16px; padding: 0 16px;
+    }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip {
+      flex: none;
+      border: 1.5px solid var(--ink);
+      background: var(--card);
+      border-radius: 99px;
+      padding: 6px 14px;
+      font-weight: 600; font-size: 14px;
+      cursor: pointer;
+    }
+    .chip.on { background: var(--ink); color: var(--lime); }
+    .filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .select {
+      appearance: none; -webkit-appearance: none;
+      border: 1px solid var(--line);
+      background: var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23141619' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 12px center;
+      border-radius: 12px;
+      padding: 8px 32px 8px 12px;
+      font-size: 14px; font-weight: 600;
+      min-height: 40px;
+      cursor: pointer;
+    }
+    .seg {
+      display: inline-flex;
+      background: var(--violet-soft);
+      border-radius: 12px;
+      padding: 3px;
+    }
+    .seg button {
+      border: 0; background: transparent;
+      padding: 6px 12px; border-radius: 9px;
+      font-size: 13px; font-weight: 700;
+      color: var(--ink-2);
+      cursor: pointer; white-space: nowrap;
+    }
+    .seg button.on { background: var(--violet); color: #fff; }
+
+    /* ---------- Rejilla ---------- */
+    main {
+      max-width: 1180px; margin: 0 auto;
+      padding: 16px 16px 40px;
+      display: grid; gap: 14px;
+      grid-template-columns: minmax(0, 1fr);
+    }
+    @media (min-width: 900px) {
+      main { grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 18px; }
+      .span-12 { grid-column: span 12; }
+      .span-8 { grid-column: span 8; }
+      .span-7 { grid-column: span 7; }
+      .span-5 { grid-column: span 5; }
+      .span-4 { grid-column: span 4; }
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+      min-width: 0;
+    }
+    .card-head {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 10px; margin-bottom: 14px;
+    }
+    h2 {
+      font-family: var(--display);
+      font-weight: 500;
+      text-transform: uppercase;
+      font-size: 21px;
+      line-height: 1.05;
+      margin: 0;
+    }
+    .sub { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+
+    /* ---------- Hero ---------- */
+    .hero {
+      background: var(--ink);
+      color: #fff;
+      border-radius: 24px;
+      padding: 22px 20px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: '';
+      position: absolute; right: -60px; top: -60px;
+      width: 200px; height: 200px; border-radius: 50%;
+      background: var(--violet);
+      opacity: .55;
+      filter: blur(2px);
+      pointer-events: none;
+    }
+    .hero > * { position: relative; z-index: 1; }
+    .hero-label {
+      font-size: 12px; font-weight: 700;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: var(--lavender);
+    }
+    .hero-period { font-size: 13px; color: #B9B6C6; margin-top: 2px; }
+    .hero-balance {
+      font-family: var(--display);
+      font-weight: 500;
+      font-size: clamp(42px, 11vw, 72px);
+      line-height: 1;
+      margin: 14px 0 8px;
+      color: var(--lime);
+      letter-spacing: -.01em;
+    }
+    .hero-balance.neg { color: var(--orange); }
+    .delta {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 12.5px; font-weight: 700;
+      padding: 4px 10px; border-radius: 99px;
+      background: rgba(255,255,255,.1);
+      color: #fff;
+    }
+    .delta.up { background: var(--lime); color: var(--ink); }
+    .delta.down { background: var(--orange); color: #fff; }
+    .stats {
+      display: grid; grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px; margin-top: 18px;
+    }
+    @media (min-width: 700px) { .stats { grid-template-columns: repeat(4, minmax(0,1fr)); } }
+    .stat {
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 16px;
+      padding: 12px 14px;
+    }
+    .stat-k { font-size: 12px; color: #B9B6C6; display: flex; align-items: center; gap: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+    .stat-v { font-size: 20px; font-weight: 800; margin-top: 2px; }
+    .split { margin-top: 16px; }
+    .split-bar {
+      display: flex; height: 8px; border-radius: 99px; overflow: hidden;
+      background: rgba(255,255,255,.12);
+    }
+    .split-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 8px; font-size: 12.5px; color: #D9D6E4; }
+    .split-legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+    /* ---------- Gráficos ---------- */
+    .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--muted); }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+    .legend i.line { height: 3px; border-radius: 2px; width: 14px; }
+    .chart-box { position: relative; height: 260px; }
+    @media (min-width: 900px) { .chart-box { height: 300px; } }
+
+    /* ---------- Referencias ---------- */
+    .tabs { display: inline-flex; background: var(--violet-soft); border-radius: 12px; padding: 3px; }
+    .tabs button {
+      border: 0; background: transparent; padding: 6px 12px; border-radius: 9px;
+      font-size: 13px; font-weight: 700; color: var(--ink-2); cursor: pointer;
+    }
+    .tabs button.on { background: var(--ink); color: var(--lime); }
+    .refs { display: flex; flex-direction: column; gap: 4px; }
+    .ref { padding: 8px 0; }
+    .ref-top { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
+    .ref-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ref-val { font-weight: 700; white-space: nowrap; }
+    .ref-val small { font-weight: 500; color: var(--muted); margin-left: 6px; }
+    .ref-track { height: 6px; background: var(--bg); border-radius: 99px; margin-top: 6px; overflow: hidden; }
+    .ref-fill { height: 100%; border-radius: 99px; }
+
+    /* ---------- Fiscal ---------- */
+    .table-wrap { overflow-x: auto; margin: 0 -18px; padding: 0 18px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th {
+      text-align: right; font-size: 11.5px; font-weight: 700;
+      letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+      padding: 0 0 8px 12px; white-space: nowrap;
+    }
+    th:first-child, td:first-child { text-align: left; padding-left: 0; }
+    td { text-align: right; padding: 10px 0 10px 12px; border-top: 1px solid var(--line); white-space: nowrap; }
+    td:first-child { font-weight: 700; }
+    tfoot td { font-weight: 800; border-top: 1.5px solid var(--ink); }
+    .tri-pill {
+      display: inline-block; background: var(--lavender); color: var(--ink);
+      border-radius: 8px; padding: 2px 8px; font-size: 12.5px;
+    }
+
+    /* ---------- Clave y carga ---------- */
+    .key-card {
+      max-width: 420px; margin: 24px auto; padding: 22px 20px;
+      background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    }
+    .key-card h2 { margin-bottom: 6px; }
+    .key-card form { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+    .key-input {
+      width: 100%; border: 1px solid var(--line); background: var(--bg);
+      border-radius: 12px; padding: 12px; font-size: 16px;
+    }
+    .key-input:focus { outline: 2px solid var(--violet); outline-offset: 1px; }
+    .more {
+      width: 100%; border: 1.5px solid var(--ink); background: var(--card);
+      border-radius: 12px; padding: 11px; font-weight: 700; cursor: pointer;
+    }
+    .more:hover { background: var(--lime); }
+    .key-err { color: var(--orange); font-size: 13.5px; font-weight: 600; min-height: 1em; margin-top: 8px; }
+    body.locked .filters, body.locked main { display: none; }
+    body.is-loading main { opacity: .45; transition: opacity .2s; }
+    body.is-loading .hero-balance::after { content: ' · cargando…'; font-size: 16px; color: var(--lavender); }
+
+    footer {
+      max-width: 1180px; margin: 0 auto;
+      padding: 0 16px max(24px, env(safe-area-inset-bottom));
+      font-size: 12px; color: var(--muted);
+    }
+    .error {
+      max-width: 1148px; margin: 12px max(16px, calc((100% - 1148px) / 2)); padding: 14px 16px;
+      background: var(--orange-soft); border-radius: 14px; color: var(--ink);
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div>
+      <span class="eyebrow">La Demo Swing Lab</span>
+      <h1>Mis finanzas</h1>
+    </div>
+    <button class="icon-btn" id="refreshBtn" aria-label="Actualizar datos" title="Actualizar datos">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+    </button>
+  </header>
+
+  <nav class="filters" aria-label="Filtros">
+    <div class="filters-inner">
+      <div class="chips" id="yearChips" role="group" aria-label="Año"></div>
+      <div class="filter-row">
+        <select class="select" id="monthSel" aria-label="Mes"></select>
+        <div class="seg" id="modeSeg" role="group" aria-label="Tipo de mes">
+          <button data-v="mc" class="on">Mes contable</button>
+          <button data-v="mr">Mes real</button>
+        </div>
+        <select class="select" id="srcSel" aria-label="Fuente"></select>
+      </div>
+    </div>
+  </nav>
+
+  <div class="error" id="errorBox"></div>
+
+  <section class="key-card" id="keyCard" hidden>
+    <h2>Introduce tu clave</h2>
+    <p class="sub">Es el valor de <b>CLAVE</b> en las propiedades de tu script. Se guarda solo en este dispositivo.</p>
+    <form id="keyForm" autocomplete="off">
+      <input class="key-input" id="keyInput" type="password" placeholder="Pega aquí tu clave" aria-label="Clave">
+      <button class="more" type="submit">Entrar</button>
+    </form>
+    <div class="key-err" id="keyErr"></div>
+  </section>
+
+  <main>
+    <!-- Resumen -->
+    <section class="hero span-12" aria-label="Resumen del periodo">
+      <div class="hero-label">Balance del periodo</div>
+      <div class="hero-period" id="periodLabel"></div>
+      <div class="hero-balance num" id="balance">—</div>
+      <span class="delta" id="delta" hidden></span>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-k"><span class="dot" style="background:var(--lavender)"></span>Ingresos</div>
+          <div class="stat-v num" id="kIn">—</div>
+        </div>
+        <div class="stat">
+          <div class="stat-k"><span class="dot" style="background:var(--orange)"></span>Gastos</div>
+          <div class="stat-v num" id="kOut">—</div>
+        </div>
+        <div class="stat">
+          <div class="stat-k">Margen</div>
+          <div class="stat-v num" id="kMargin">—</div>
+        </div>
+        <div class="stat">
+          <div class="stat-k">Saldo al cierre</div>
+          <div class="stat-v num" id="kSaldo">—</div>
+        </div>
+      </div>
+      <div class="split">
+        <div class="split-bar" id="splitBar"></div>
+        <div class="split-legend" id="splitLegend"></div>
+      </div>
+    </section>
+
+    <!-- Evolución -->
+    <section class="card span-8">
+      <div class="card-head">
+        <div>
+          <h2>Evolución</h2>
+          <div class="sub" id="evoSub"></div>
+        </div>
+      </div>
+      <div class="legend" style="margin-bottom:10px">
+        <span><i style="background:var(--violet)"></i>Ingresos</span>
+        <span><i style="background:var(--orange)"></i>Gastos</span>
+        <span><i class="line" style="background:var(--ink)"></i>Balance acumulado</span>
+      </div>
+      <div class="chart-box"><canvas id="evoChart" role="img" aria-label="Ingresos, gastos y balance acumulado por mes"></canvas></div>
+    </section>
+
+    <!-- Por referencia -->
+    <section class="card span-4">
+      <div class="card-head">
+        <div>
+          <h2>Por referencia</h2>
+          <div class="sub">Las 10 con más peso del periodo</div>
+        </div>
+      </div>
+      <div class="tabs" id="refTabs" style="margin-bottom:12px">
+        <button data-v="Gasto" class="on">Gastos</button>
+        <button data-v="Ingreso">Ingresos</button>
+      </div>
+      <div class="refs" id="refList"></div>
+    </section>
+
+    <!-- Comparativa anual -->
+    <section class="card span-7">
+      <div class="card-head">
+        <div>
+          <h2>Año contra año</h2>
+          <div class="sub" id="yoySub"></div>
+        </div>
+      </div>
+      <div class="legend" style="margin-bottom:10px">
+        <span><i style="background:var(--violet)"></i>Ingresos</span>
+        <span><i style="background:var(--orange)"></i>Gastos</span>
+        <span><i style="background:var(--lime);outline:1px solid var(--ink)"></i>Balance</span>
+      </div>
+      <div class="chart-box"><canvas id="yoyChart" role="img" aria-label="Ingresos, gastos y balance por año"></canvas></div>
+    </section>
+
+    <!-- Fiscal -->
+    <section class="card span-5">
+      <div class="card-head">
+        <div>
+          <h2>Fiscal La Demo</h2>
+          <div class="sub">Por trimestre, según los filtros</div>
+        </div>
+      </div>
+      <div id="fiscal"></div>
+    </section>
+
+  </main>
+
+  <footer id="footer"></footer>
+
+  <script>
+    /* ===== CONFIGURACIÓN =====
+       Pega aquí la URL /exec de tu script de Apps Script (sin ?k=…).
+       La clave NO va aquí: va en tu enlace (#k=…) o se pide en pantalla. */
+    window.API_URL = 'https://script.google.com/macros/s/AKfycbxTbd9arSpE0BqCUvn1OxMUpXh-UWo4Lt2kX4i7C3SnYyj-No9nlwtZNVk8a3pTMlB3zw/exec';
+  </script>
+  <script>
+  (function () {
+    'use strict';
+
+    /* ---------- Utilidades ---------- */
+    var MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    var MONTHS_LONG = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    var C = {
+      ink: '#141619', muted: '#6B6B72', line: '#EEEAF8',
+      violet: '#5015FA', orange: '#F4623A', lime: '#E1FF73', lavender: '#D4C5FF'
+    };
+
+    function makeFmt(dec) {
+      var opts = { style: 'currency', currency: 'EUR', minimumFractionDigits: dec, maximumFractionDigits: dec };
+      try { return new Intl.NumberFormat('es-ES', Object.assign({ useGrouping: 'always' }, opts)); }
+      catch (e) { return new Intl.NumberFormat('es-ES', opts); }
+    }
+    var eur2 = makeFmt(2), eur0 = makeFmt(0);
+    function money(v, dec) { return (dec === 0 ? eur0 : eur2).format(v || 0); }
+    function signed(v) { return (v > 0 ? '+' : v < 0 ? '−' : '') + money(Math.abs(v)); }
+    function short(v) {
+      var a = Math.abs(v);
+      if (a >= 1000) return (v / 1000).toLocaleString('es-ES', { maximumFractionDigits: 1 }) + 'k';
+      return Math.round(v).toLocaleString('es-ES');
+    }
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    }
+    function $(id) { return document.getElementById(id); }
+
+    /* ---------- Estado ----------
+       DATA.buckets: totales ya agrupados por el script
+       { y, mc, mr, src, tipo, ref, tri, v, ld, iva, irpf, lf, ls } */
+    // Convierte el formato compacto que envía el script en objetos fáciles de usar
+    function expand(raw) {
+      raw = raw || {};
+      var dic = raw.dic || { src: [], ref: [], tri: [] };
+      var buckets = (raw.b || []).map(function (g) {
+        return {
+          y: g[0], mc: g[1], mr: g[2], src: dic.src[g[3]], tipo: g[4] ? 'Ingreso' : 'Gasto',
+          ref: dic.ref[g[5]], tri: dic.tri[g[6]], v: g[7], ld: g[8], iva: g[9], irpf: g[10],
+          lf: g[11] || 0, ls: g[12]
+        };
+      });
+      return { buckets: buckets, count: raw.count || 0, updatedAt: raw.updatedAt };
+    }
+    var DATA = { buckets: [], count: 0 };
+    var state = { year: 'all', month: 0, mode: 'mc', src: 'all', tab: 'Gasto' };
+    var charts = {};
+
+    function years() {
+      var set = {};
+      DATA.buckets.forEach(function (b) { if (b.y) set[b.y] = 1; });
+      return Object.keys(set).map(Number).sort(function (a, b) { return a - b; });
+    }
+    function monthOf(b) { return state.mode === 'mr' ? b.mr : b.mc; }
+
+    // Filtros base (fuente + mes); el año se aplica aparte para poder comparar
+    function baseBuckets(opts) {
+      opts = opts || {};
+      return DATA.buckets.filter(function (b) {
+        if (state.src !== 'all' && b.src !== state.src) return false;
+        if (!opts.ignoreMonth && state.month && monthOf(b) !== state.month) return false;
+        return true;
+      });
+    }
+    function periodBuckets() {
+      return baseBuckets().filter(function (b) { return state.year === 'all' || b.y === state.year; });
+    }
+    function totals(list) {
+      var t = { inc: 0, out: 0 };
+      list.forEach(function (b) { if (b.tipo === 'Ingreso') t.inc += b.v; else t.out += b.v; });
+      t.bal = t.inc - t.out;
+      return t;
+    }
+
+    /* ---------- Filtros UI ---------- */
+    function buildFilters() {
+      var ys = years();
+      if (state.year !== 'all' && ys.indexOf(state.year) < 0) state.year = ys.length ? ys[ys.length - 1] : 'all';
+
+      var chips = ['<button class="chip' + (state.year === 'all' ? ' on' : '') + '" data-y="all">Todos</button>'];
+      ys.slice().reverse().forEach(function (y) {
+        chips.push('<button class="chip' + (state.year === y ? ' on' : '') + '" data-y="' + y + '">' + y + '</button>');
+      });
+      $('yearChips').innerHTML = chips.join('');
+
+      var mopts = ['<option value="0">Todos los meses</option>'];
+      MONTHS_LONG.forEach(function (m, i) {
+        mopts.push('<option value="' + (i + 1) + '"' + (state.month === i + 1 ? ' selected' : '') + '>' + m + '</option>');
+      });
+      $('monthSel').innerHTML = mopts.join('');
+
+      var srcs = {};
+      DATA.buckets.forEach(function (b) { srcs[b.src] = 1; });
+      var sopts = ['<option value="all">Todas las fuentes</option>'];
+      Object.keys(srcs).sort().forEach(function (s) {
+        sopts.push('<option value="' + esc(s) + '"' + (state.src === s ? ' selected' : '') + '>' + esc(s) + '</option>');
+      });
+      $('srcSel').innerHTML = sopts.join('');
+    }
+
+    $('yearChips').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-y]');
+      if (!b) return;
+      state.year = b.dataset.y === 'all' ? 'all' : Number(b.dataset.y);
+      buildFilters(); render();
+    });
+    $('monthSel').addEventListener('change', function (e) { state.month = Number(e.target.value); render(); });
+    $('srcSel').addEventListener('change', function (e) { state.src = e.target.value; render(); });
+    $('modeSeg').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-v]');
+      if (!b) return;
+      state.mode = b.dataset.v;
+      [].forEach.call($('modeSeg').children, function (x) { x.classList.toggle('on', x === b); });
+      render();
+    });
+    $('refTabs').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-v]');
+      if (!b) return;
+      state.tab = b.dataset.v;
+      [].forEach.call($('refTabs').children, function (x) { x.classList.toggle('on', x === b); });
+      renderRefs(periodBuckets());
+    });
+
+    $('refreshBtn').addEventListener('click', function () { fetchData(true); });
+
+    function showError(msg) {
+      var box = $('errorBox');
+      box.textContent = msg;
+      box.style.display = 'block';
+    }
+    function hideError() { $('errorBox').style.display = 'none'; }
+
+    /* ---------- Clave y descarga de datos ---------- */
+    var KEY_STORE = 'finanzas_clave';
+    function readKey() {
+      // 1) del enlace: …/#k=CLAVE  2) de este dispositivo
+      var m = location.hash.match(/k=([^&]+)/);
+      if (m) {
+        var k = decodeURIComponent(m[1]);
+        try { localStorage.setItem(KEY_STORE, k); } catch (e) {}
+        return k;
+      }
+      try { return localStorage.getItem(KEY_STORE) || ''; } catch (e) { return ''; }
+    }
+    function forgetKey() { try { localStorage.removeItem(KEY_STORE); } catch (e) {} }
+
+    function askKey(msg) {
+      document.body.classList.add('locked');
+      $('keyCard').hidden = false;
+      $('keyErr').textContent = msg || '';
+      $('keyInput').focus();
+    }
+    $('keyForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var k = $('keyInput').value.trim();
+      if (!k) { $('keyErr').textContent = 'Pega tu clave para continuar.'; return; }
+      try { localStorage.setItem(KEY_STORE, k); } catch (err) {}
+      KEY = k;
+      $('keyCard').hidden = true;
+      document.body.classList.remove('locked');
+      fetchData(false);
+    });
+
+    var KEY = readKey();
+    var loading = false;
+    function fetchData(refresh) {
+      if (loading) return;
+      if (!KEY) { askKey(); return; }
+      if (!window.API_URL || window.API_URL.indexOf('PEGA_AQUI') === 0) {
+        showError('Falta configurar la URL del script en index.html (API_URL).');
+        return;
+      }
+      loading = true;
+      var btn = $('refreshBtn');
+      btn.classList.add('spin');
+      document.body.classList.toggle('is-loading', !DATA.buckets.length);
+      var url = window.API_URL + '?k=' + encodeURIComponent(KEY) + (refresh ? '&refresh=1' : '') + '&t=' + Date.now();
+      var ctrl = window.AbortController ? new AbortController() : null;
+      var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 60000);
+
+      fetch(url, ctrl ? { signal: ctrl.signal } : {})
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (d && d.error) {
+            if (/autorizado|clave/i.test(d.error)) { forgetKey(); KEY = ''; askKey('Esa clave no es válida. Revísala y vuelve a pegarla.'); }
+            else showError('El script ha devuelto un error: ' + d.error);
+            return;
+          }
+          hideError();
+          DATA = expand(d);
+          var ys = years();
+          if (state.year === 'all' || ys.indexOf(state.year) < 0) state.year = ys.length ? ys[ys.length - 1] : 'all';
+          buildFilters();
+          render();
+        })
+        .catch(function () {
+          showError('No se han podido descargar los datos. Comprueba la conexión y pulsa ↻ para reintentar.');
+        })
+        .then(function () {
+          clearTimeout(timer);
+          loading = false;
+          btn.classList.remove('spin');
+          document.body.classList.remove('is-loading');
+        });
+    }
+
+    /* ---------- Render ---------- */
+    function periodText() {
+      var parts = [state.year === 'all' ? 'Todos los años' : String(state.year)];
+      parts.push(state.month ? MONTHS_LONG[state.month - 1] : 'Todos los meses');
+      parts.push(state.mode === 'mr' ? 'mes real' : 'mes contable');
+      if (state.src !== 'all') parts.push(state.src);
+      return parts.join(' · ');
+    }
+
+    function renderHero(list) {
+      var t = totals(list);
+      $('periodLabel').textContent = periodText();
+      var bal = $('balance');
+      bal.textContent = signed(t.bal);
+      bal.classList.toggle('neg', t.bal < 0);
+      $('kIn').textContent = money(t.inc, 0);
+      $('kOut').textContent = money(t.out, 0);
+      $('kMargin').textContent = t.inc ? Math.round(t.bal / t.inc * 100) + '%' : '—';
+
+      // Saldo del último movimiento del periodo (por fecha)
+      var last = null;
+      list.forEach(function (b) { if (b.ls !== null && b.ls !== undefined && b.lf && (!last || b.lf >= last.lf)) last = b; });
+      $('kSaldo').textContent = last ? money(last.ls, 0) : '—';
+
+      // Comparación con el mismo periodo del año anterior
+      var d = $('delta');
+      d.hidden = true;
+      if (state.year !== 'all') {
+        var prev = totals(baseBuckets().filter(function (b) { return b.y === state.year - 1; }));
+        if (prev.inc || prev.out) {
+          var diff = t.bal - prev.bal;
+          d.hidden = false;
+          d.className = 'delta ' + (diff >= 0 ? 'up' : 'down');
+          d.textContent = (diff >= 0 ? '▲ ' : '▼ ') + money(Math.abs(diff), 0) + ' vs ' + (state.year - 1);
+        }
+      }
+
+      // Reparto por fuente (volumen total movido)
+      var bySrc = {}, total = 0;
+      list.forEach(function (b) { bySrc[b.src] = (bySrc[b.src] || 0) + b.v; total += b.v; });
+      var palette = [C.lime, C.lavender, '#FFFFFF', C.orange, '#8EF0DC'];
+      var keys = Object.keys(bySrc).sort(function (a, b) { return bySrc[b] - bySrc[a]; });
+      $('splitBar').innerHTML = total ? keys.map(function (k, i) {
+        return '<div style="width:' + (bySrc[k] / total * 100) + '%;background:' + palette[i % palette.length] + '"></div>';
+      }).join('') : '';
+      $('splitLegend').innerHTML = total ? keys.map(function (k, i) {
+        return '<span><span class="dot" style="background:' + palette[i % palette.length] + '"></span>' + esc(k) + ' ' + Math.round(bySrc[k] / total * 100) + '%</span>';
+      }).join('') : '';
+    }
+
+    function chartDefaults() {
+      Chart.defaults.font.family = "'Manrope', system-ui, sans-serif";
+      Chart.defaults.font.size = 12;
+      Chart.defaults.color = C.muted;
+    }
+
+    function tooltip(dec) {
+      return {
+        backgroundColor: C.ink, titleColor: C.lime, padding: 10, cornerRadius: 10, boxPadding: 4,
+        callbacks: { label: function (c) { return ' ' + c.dataset.label + ': ' + money(c.parsed.y, dec); } }
+      };
+    }
+
+    function renderEvolution() {
+      // Ignora el filtro de mes para mostrar la tendencia; el mes elegido se resalta
+      var list = baseBuckets({ ignoreMonth: true }).filter(function (b) { return state.year === 'all' || b.y === state.year; });
+      var map = {};
+      list.forEach(function (b) {
+        var m = monthOf(b);
+        if (!b.y || !m) return;
+        var k = b.y + '-' + ('0' + m).slice(-2);
+        if (!map[k]) map[k] = { inc: 0, out: 0, m: m };
+        if (b.tipo === 'Ingreso') map[k].inc += b.v; else map[k].out += b.v;
+      });
+
+      var keys;
+      if (state.year !== 'all') {
+        var maxM = 0;
+        Object.keys(map).forEach(function (k) { maxM = Math.max(maxM, map[k].m); });
+        keys = [];
+        for (var i = 1; i <= Math.max(maxM, 1); i++) keys.push(state.year + '-' + ('0' + i).slice(-2));
+      } else {
+        keys = Object.keys(map).sort();
+      }
+
+      var labels = keys.map(function (k) {
+        var p = k.split('-'), m = MONTHS[Number(p[1]) - 1];
+        return state.year === 'all' ? m + ' ' + p[0].slice(2) : m;
+      });
+      var inc = keys.map(function (k) { return map[k] ? Math.round(map[k].inc * 100) / 100 : 0; });
+      var out = keys.map(function (k) { return map[k] ? Math.round(map[k].out * 100) / 100 : 0; });
+      var acc = 0;
+      var cum = keys.map(function (k) { acc += map[k] ? map[k].inc - map[k].out : 0; return Math.round(acc * 100) / 100; });
+
+      var fade = function (color) {
+        return keys.map(function (k) {
+          return !state.month || Number(k.split('-')[1]) === state.month ? color : color + '33';
+        });
+      };
+
+      $('evoSub').textContent = (state.year === 'all' ? 'Todos los años' : state.year) + ' · por ' + (state.mode === 'mr' ? 'mes real' : 'mes contable') + (state.month ? ' · ' + MONTHS_LONG[state.month - 1] + ' resaltado' : '');
+
+      var data = {
+        labels: labels,
+        datasets: [
+          { type: 'line', label: 'Balance acumulado', data: cum, borderColor: C.ink, backgroundColor: C.lime, borderWidth: 2,
+            pointRadius: keys.length > 24 ? 0 : 3, pointBorderWidth: 1.5, pointBorderColor: C.ink, tension: .3, order: 0 },
+          { type: 'bar', label: 'Ingresos', data: inc, backgroundColor: fade(C.violet), borderRadius: 6, maxBarThickness: 22, order: 1 },
+          { type: 'bar', label: 'Gastos', data: out, backgroundColor: fade(C.orange), borderRadius: 6, maxBarThickness: 22, order: 1 }
+        ]
+      };
+      var options = {
+        responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { display: false }, tooltip: tooltip(2) },
+        scales: {
+          x: { grid: { display: false }, ticks: { autoSkip: true, maxRotation: 0, autoSkipPadding: 8 } },
+          y: { grid: { color: C.line }, border: { display: false }, ticks: { callback: function (v) { return short(v); } } }
+        }
+      };
+      if (charts.evo) { charts.evo.data = data; charts.evo.options = options; charts.evo.update(); }
+      else charts.evo = new Chart($('evoChart'), { data: data, options: options });
+    }
+
+    function renderRefs(list) {
+      var by = {}, total = 0;
+      list.forEach(function (b) {
+        if (b.tipo !== state.tab) return;
+        by[b.ref] = (by[b.ref] || 0) + b.v;
+        total += b.v;
+      });
+      var keys = Object.keys(by).sort(function (a, b) { return by[b] - by[a]; });
+      if (!keys.length) {
+        $('refList').innerHTML = '<div class="empty">Sin ' + (state.tab === 'Gasto' ? 'gastos' : 'ingresos') + ' en este periodo</div>';
+        return;
+      }
+      var max = by[keys[0]];
+      var color = state.tab === 'Gasto' ? C.orange : C.violet;
+      var html = keys.slice(0, 10).map(function (k) {
+        return '<div class="ref">' +
+          '<div class="ref-top"><span class="ref-name">' + esc(k) + '</span>' +
+          '<span class="ref-val num">' + money(by[k], 0) + '<small>' + Math.round(by[k] / total * 100) + '%</small></span></div>' +
+          '<div class="ref-track"><div class="ref-fill" style="width:' + Math.max(2, by[k] / max * 100) + '%;background:' + color + '"></div></div>' +
+          '</div>';
+      }).join('');
+      if (keys.length > 10) {
+        var rest = keys.slice(10).reduce(function (s, k) { return s + by[k]; }, 0);
+        html += '<div class="sub" style="padding:6px 0 0">+ ' + (keys.length - 10) + ' referencias más · ' + money(rest, 0) + '</div>';
+      }
+      $('refList').innerHTML = html;
+    }
+
+    function renderYoY() {
+      var by = {};
+      baseBuckets().forEach(function (b) {
+        if (!b.y) return;
+        if (!by[b.y]) by[b.y] = { inc: 0, out: 0 };
+        if (b.tipo === 'Ingreso') by[b.y].inc += b.v; else by[b.y].out += b.v;
+      });
+      var ys = Object.keys(by).sort();
+      var hl = function (color) {
+        return ys.map(function (y) { return state.year === 'all' || Number(y) === state.year ? color : color + '40'; });
+      };
+      $('yoySub').textContent = (state.month ? MONTHS_LONG[state.month - 1] + ' de cada año' : 'Año completo') +
+        (state.src !== 'all' ? ' · ' + state.src : '') + (state.year !== 'all' ? ' · ' + state.year + ' resaltado' : '');
+
+      var data = {
+        labels: ys,
+        datasets: [
+          { label: 'Ingresos', data: ys.map(function (y) { return Math.round(by[y].inc); }), backgroundColor: hl(C.violet), borderRadius: 6, maxBarThickness: 34 },
+          { label: 'Gastos', data: ys.map(function (y) { return Math.round(by[y].out); }), backgroundColor: hl(C.orange), borderRadius: 6, maxBarThickness: 34 },
+          { label: 'Balance', data: ys.map(function (y) { return Math.round(by[y].inc - by[y].out); }), backgroundColor: hl(C.lime),
+            borderColor: C.ink, borderWidth: 1, borderRadius: 6, maxBarThickness: 34 }
+        ]
+      };
+      var options = {
+        responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { display: false }, tooltip: tooltip(0) },
+        scales: {
+          x: { grid: { display: false } },
+          y: { grid: { color: C.line }, border: { display: false }, ticks: { callback: function (v) { return short(v); } } }
+        }
+      };
+      if (charts.yoy) { charts.yoy.data = data; charts.yoy.options = options; charts.yoy.update(); }
+      else charts.yoy = new Chart($('yoyChart'), { type: 'bar', data: data, options: options });
+    }
+
+    function renderFiscal(list) {
+      var by = {}, any = false;
+      list.forEach(function (b) {
+        if (!b.ld && !b.iva && !b.irpf) return;
+        any = true;
+        var k = b.y + '|' + (b.tri || '—');
+        if (!by[k]) by[k] = { y: b.y, tri: b.tri || '—', ld: 0, iva: 0, irpf: 0 };
+        by[k].ld += b.ld; by[k].iva += b.iva; by[k].irpf += b.irpf;
+      });
+      if (!any) { $('fiscal').innerHTML = '<div class="empty">Sin importes de La Demo en este periodo</div>'; return; }
+      var keys = Object.keys(by).sort();
+      var showYear = state.year === 'all';
+      var tot = { ld: 0, iva: 0, irpf: 0 };
+      var body = keys.map(function (k) {
+        var r = by[k];
+        tot.ld += r.ld; tot.iva += r.iva; tot.irpf += r.irpf;
+        return '<tr><td><span class="tri-pill">' + esc(r.tri) + '</span>' + (showYear ? ' <span class="sub">' + r.y + '</span>' : '') + '</td>' +
+          '<td class="num">' + money(r.ld) + '</td><td class="num">' + money(r.iva) + '</td><td class="num">' + money(r.irpf) + '</td></tr>';
+      }).join('');
+      $('fiscal').innerHTML = '<div class="table-wrap"><table>' +
+        '<thead><tr><th>Trimestre</th><th>La Demo</th><th>IVA</th><th>IRPF</th></tr></thead>' +
+        '<tbody>' + body + '</tbody>' +
+        '<tfoot><tr><td>Total</td><td class="num">' + money(tot.ld) + '</td><td class="num">' + money(tot.iva) + '</td><td class="num">' + money(tot.irpf) + '</td></tr></tfoot>' +
+        '</table></div>';
+    }
+
+    function render() {
+      var list = periodBuckets();
+      renderHero(list);
+      renderRefs(list);
+      renderFiscal(list);
+      if (window.Chart) { renderEvolution(); renderYoY(); }
+      var d = DATA.updatedAt ? new Date(DATA.updatedAt) : null;
+      $('footer').textContent = (DATA.count || 0) + ' movimientos en la hoja' +
+        (d ? ' · Datos leídos el ' + d.toLocaleDateString('es-ES') + ' a las ' + d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '');
+    }
+
+    /* La librería de gráficos se descarga después de pintar la página,
+       así un fallo de red nunca deja la pantalla en blanco. */
+    function loadCharts() {
+      var done = false;
+      var s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
+      s.async = true;
+      s.onload = function () {
+        done = true;
+        chartDefaults();
+        renderEvolution();
+        renderYoY();
+      };
+      s.onerror = function () {
+        done = true;
+        showError('no se han podido cargar los gráficos. El resto de datos está bien; recarga para reintentarlo.');
+      };
+      document.head.appendChild(s);
+      setTimeout(function () {
+        if (!done) showError('los gráficos están tardando en cargar. El resto de datos está bien.');
+      }, 10000);
+    }
+
+    /* ---------- Arranque ---------- */
+    // Quita la clave de la barra de direcciones una vez guardada
+    function cleanHash() {
+      if (location.hash && /k=/.test(location.hash) && history.replaceState) {
+        history.replaceState(null, '', location.pathname + location.search);
+      }
+    }
+    cleanHash();
+    // Si se pega el enlace con la clave con la página ya abierta
+    window.addEventListener('hashchange', function () {
+      if (!/k=/.test(location.hash)) return;
+      KEY = readKey();
+      cleanHash();
+      $('keyCard').hidden = true;
+      document.body.classList.remove('locked');
+      fetchData(false);
+    });
+    buildFilters();
+    render();
+    loadCharts();
+    fetchData(false);
+  })();
+  </script>
+</body>
+</html>
